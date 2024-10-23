@@ -1,0 +1,235 @@
+version: '3.7'
+
+services:
+  ms-discovery:
+    image: brunogds/tc_fase5-discovery:latest
+    container_name: ms-discovery
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: curl -f http://localhost:8761
+      timeout: 5s
+      retries: 3
+    environment:
+      eureka.instance.hostname: ms_discovery
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+  ms-gateway:
+    image: brunogds/tc_fase5-gateway:latest
+    container_name: ms-gateway
+    ports:
+      - "9999:9999"
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+# PRODUTO DB E SERVICE
+
+  db-ms-produto:
+    image: mysql:latest
+    container_name: db-ms-produto
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: produto-service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-produto:
+    image: brunogds/tc_fase5-produto:latest
+    container_name: ms-produto
+    # ports:
+    #   - "8080:8080"
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-produto:
+        condition: service_healthy
+    environment:
+      # server.port: 8080
+      spring.datasource.url: jdbc:mysql://db-ms-produto:3306/produto-service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+# ESTOQUE DB E SERVICE
+
+  db-ms-estoque:
+    image: mysql:latest
+    container_name: db-ms-estoque
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: estoque_service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-estoque:
+    image: brunogds/tc_fase5-estoque:latest
+    container_name: ms-estoque
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-estoque:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: jdbc:mysql://db-ms-estoque:3306/estoque_service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+# CARRINHO DB E SERVICE
+
+  db-ms-carrinho:
+    image: mysql:latest
+    container_name: db-ms-carrinho
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: carrinho_service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-carrinho:
+    image: brunogds/tc_fase5-carrinho:latest
+    container_name: ms-carrinho
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-carrinho:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: jdbc:mysql://db-ms-carrinho:3306/carrinho_service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+# PEDIDO DB E SERVICE
+
+  db-ms-pedido:
+    image: mysql:latest
+    container_name: db-ms-pedido
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: pedido_service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-pedido:
+    image: brunogds/tc_fase5-pedido:latest
+    container_name: ms-pedido
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-pedido:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: jdbc:mysql://db-ms-pedido:3306/pedido_service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+      
+# PAGAMENTO DB E SERVICE
+
+  db-ms-pagamento:
+    image: mysql:latest
+    container_name: db-ms-pagamento
+    ports:
+      - "3310:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: pagamento_service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-pagamento:
+    image: brunogds/tc_fase5-pagamento:latest
+    container_name: ms-pagamento
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-pagamento:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: jdbc:mysql://db-ms-pagamento:3306/pagamento_service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+# USUARIO DB E SERVICE
+
+  db-ms-usuario:
+    image: mysql:latest
+    container_name: db-ms-usuario
+    ports:
+      - "3311:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: senha
+      MYSQL_DATABASE: usuario_service
+      MYSQL_USER: bruno
+      MYSQL_PASSWORD: bruno123
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      timeout: 5s
+      retries: 10
+    networks:
+      - tc-network
+
+  ms-usuario:
+    image: brunogds/tc_fase5-usuario:latest
+    container_name: ms-usuario
+    depends_on:
+      ms-discovery:
+        condition: service_healthy
+      db-ms-usuario:
+        condition: service_healthy
+    environment:
+      spring.datasource.url: jdbc:mysql://db-ms-usuario:3306/usuario_service
+      eureka.client.serviceUrl.defaultZone: http://ms-discovery:8761/eureka/
+    networks:
+      - tc-network
+
+networks:
+  tc-network:
+    driver: bridge
